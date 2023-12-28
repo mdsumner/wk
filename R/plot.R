@@ -119,7 +119,16 @@ wk_plot.default <- function(handleable, ...,
       dots$rule <- NULL
       dots <- vctrs::vec_recycle_common(!!!dots, .size = size)
       dots_tbl <- vctrs::new_data_frame(dots, n = size)
-      grid::grid.polygon(coords$x, coords$y, coords$part_id, gp = do.call(grid::gpar, as.list(dots_tbl)),
+      if (!is.null(dots_tbl[["col"]])) {
+        dots_tbl[["fill"]] <- dots_tbl[["col"]]
+        dots_tbl[["col"]] <- NULL
+      }
+      if (!is.null(dots_tbl[["border"]])) {
+        dots_tbl[["col"]] <- dots_tbl[["border"]]
+        dots_tbl[["border"]] <- NULL
+      }
+      lens <- unlist(lapply(split(coords$ring_id, coords$feature_id), function(.x) rle(.x)[["lengths"]]))
+      grid::grid.polygon(coords$x, coords$y,  id.lengths = lens, gp = do.call(grid::gpar, as.list(dots_tbl)),
                          default.units = "native")
     }
 
