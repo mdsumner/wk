@@ -106,6 +106,27 @@ wk_plot.default <- function(handleable, ...,
     return(invisible(x))
   }
 
+  if (all(meta$geometry_type %in% c(3, 6), na.rm = TRUE)) {
+    coords <- wk_coords(x)
+    vps <- gridBase::baseViewports()
+    grid::pushViewport(vps$inner, vps$figure, vps$plot)
+    if (dots_constant) {
+
+      grid::grid.polygon(coords$x, coords$y, coords$part_id, gp = grid::gpar(...),
+                         default.units = "native")
+    } else {
+
+      dots$rule <- NULL
+      dots <- vctrs::vec_recycle_common(!!!dots, .size = size)
+      dots_tbl <- vctrs::new_data_frame(dots, n = size)
+      grid::grid.polygon(coords$x, coords$y, coords$part_id, gp = do.call(grid::gpar, as.list(dots_tbl)),
+                         default.units = "native")
+    }
+
+    grid::popViewport(3)
+    return(invisible(x))
+  }
+
   # it's not faster to flatten big vectors into a single go for anything else
   dots <- vctrs::vec_recycle_common(!!!dots, .size = size)
   for (i in seq_len(size)) {
